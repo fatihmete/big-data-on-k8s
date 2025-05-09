@@ -1,0 +1,13 @@
+# TODO
+- Spark-Jupyter Notebook-Jupyter Enterprise Gateway (JEG)
+- Airflow - [https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/kubernetes.html](https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/kubernetes.html)
+- Nifi - [https://konpyutaika.github.io/nifikop/](https://konpyutaika.github.io/nifikop/)
+- Spark Operator - [https://github.com/kubeflow/spark-operator](https://github.com/kubeflow/spark-operator)
+- Object Storage Integration - [https://min.io/](https://min.io/) [https://ozone.apache.org/](https://ozone.apache.org/)
+- HDFS Cluster Kubernetes Operator (go)
+- Kafka - [https://github.com/strimzi/strimzi-kafka-operator](https://github.com/strimzi/strimzi-kafka-operator)
+- Hbase/Cassandra
+- Superset
+- Open Policy Agent (OPA)
+- Unity Catalog
+- Keycloak

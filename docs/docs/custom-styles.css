@@ -1,0 +1,4 @@
+/* custom-styles.css */
+.md-typeset pre > code {
+    max-height: 20rem;
+}

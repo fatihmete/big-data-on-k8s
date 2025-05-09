@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: namenode-stateful
+  namespace: bigdata
+  labels:
+    app: namenode-stateful
+spec:
+  selector:
+    matchLabels:
+      app: namenode-stateful
+  serviceName: namenode-stateful-headless
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: namenode-stateful
+    spec:
+      containers:
+      - name: namenode-stateful
+        image: apache/hadoop:3.4.1
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          if [ ! -d "/hadoop/nn/current" ]; then
+              hdfs namenode -format -force
+          fi
+          hdfs namenode
+        volumeMounts:
+        - name: hadoop-stateful-config-namenode
+          mountPath: /opt/hadoop/etc/hadoop
+        - name: nn
+          mountPath: /hadoop/nn
+      volumes:
+      - name: hadoop-stateful-config-namenode
+        configMap:
+          name: hadoop-stateful-config-namenode
+      initContainers:
+      - name: change-ownership-container
+        image: busybox
+        command: ["/bin/chown","-R","1000:1000", "/hadoop/nn"]
+        securityContext:
+          runAsUser: 0
+          privileged: true
+        volumeMounts:
+        - name: nn
+          mountPath: /hadoop/nn
+  volumeClaimTemplates:
+  - metadata:
+      name: nn
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      storageClassName: longhorn
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: namenode-stateful
+  namespace: bigdata
+spec:
+  type: ClusterIP
+  selector:
+    app: namenode-stateful
+  ports:
+  - name: namenode-ui
+    port: 50070
+    targetPort: 50070
+  - name: namenode-rpc
+    port: 9000
+    targetPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: namenode-stateful-np
+  namespace: bigdata
+spec:
+  type: NodePort
+  selector:
+    app: namenode-stateful
+  ports:
+  - name: namenode-ui
+    port: 50070
+    targetPort: 50070
+    nodePort: 30571

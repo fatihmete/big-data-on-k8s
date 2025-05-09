@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+ <property>
+    <name>yarn.resourcemanager.principal</name>
+    <value>hdfs/_HOST@HOMELDAP.ORG</value>
+  </property>
+</configuration>

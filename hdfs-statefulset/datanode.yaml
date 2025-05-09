@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: datanode-stateful
+  namespace: bigdata
+spec:
+  selector:
+    matchLabels:
+      app: datanode-stateful
+  serviceName: datanode-stateful
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: datanode-stateful
+    spec:
+      containers:
+      - name: datanode-stateful
+        image: apache/hadoop:3.4.1
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          hdfs datanode
+        volumeMounts:
+        - name: hadoop-stateful-config-datanode
+          mountPath: /opt/hadoop/etc/hadoop
+        - name: disk
+          mountPath: /hadoop/disk1
+      volumes:
+      - name: hadoop-stateful-config-datanode
+        configMap:
+          name: hadoop-stateful-config-datanode
+      initContainers:
+      - name: change-ownership-container
+        image: busybox
+        command: ["/bin/chown","-R","1000:1000", "/hadoop/disk1"]
+        securityContext:
+          runAsUser: 0
+          privileged: true
+        volumeMounts:
+        - name: disk
+          mountPath: /hadoop/disk1
+  volumeClaimTemplates:
+  - metadata:
+      name: disk
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      storageClassName: longhorn
+      resources:
+        requests:
+          storage: 10Gi

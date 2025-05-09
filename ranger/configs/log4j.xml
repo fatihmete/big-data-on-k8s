@@ -1,0 +1,4 @@
+<category name="org.apache.ranger" additivity="false">
+<priority value="debug" />
+<appender-ref ref="xa_log_appender" />
+</category>

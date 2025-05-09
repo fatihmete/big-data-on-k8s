@@ -1,0 +1,52 @@
+hue:
+  replicas: 1
+  database:
+    create: false
+    persist: false
+    engine: "postgresql_psycopg2"
+    host: "192.168.1.51" # Postgresql Host
+    port: 5432 # Postgresql Port
+    user: "root" # Postgresql User
+    password: "142536" # Postgresql Password
+    name: "hue" # You must create hue database before deployment
+  interpreters: |
+    [[[trino]]]
+      name = Trino
+      interface=sqlalchemy
+      options='{"url": "trino://kube1:30808/lakehouse", "has_impersonation": true, "connect_args": "{\"protocol\": \"https\", \"KerberosKeytabPath\":\"/etc/security/keytabs/hue.keytab\", \"KerberosPrincipal\":\"hue@HOMELDAP.ORG\", \"KerberosRemoteServiceName\":\"HTTP\", \"KerberosUseCanonicalHostname\":\"false\",\"KerberosCredentialCachePath\":\"/tmp/krb5cc_1001\",\"requests_kwargs\": {\"verify\": false}}"}'
+  ini: |
+    [desktop]
+      ssl_validate=false
+      [[kerberos]]
+      hue_keytab=/etc/security/keytabs/hue.keytab
+      hue_principal=hue@HOMELDAP.ORG
+      ccache_path=/tmp/krb5cc_1001
+      
+      [[auth]]
+      backend=desktop.auth.backend.LdapBackend, desktop.auth.backend.AllowFirstUserDjangoBackend
+      [[ldap]]
+      nt_domain=HOMELDAP.ORG
+      ldap_url=ldap://HOMELDAP.ORG:389
+      base_dn="ou=People,dc=homeldap,dc=org"
+      bind_dn="uid=master,ou=People,dc=homeldap,dc=org"
+      bind_password="ldap"
+      create_users_on_login=true
+
+      [[[users]]]
+      user_name_attr="uid"
+
+    [beeswax]
+      # Host where HiveServer2 is running.
+      # If Kerberos security is enabled, use fully-qualified domain name (FQDN).
+      hive_server_host=hiveserver.company.bigdata.svc.cluster.local
+
+      # Port where HiveServer2 Thrift server runs on.
+      hive_server_port=10000
+
+    [hadoop]
+      [[hdfs_clusters]]
+        [[[default]]]
+        fs_defaultfs=hdfs://namenode.company.bigdata.svc.cluster.local:9000
+        webhdfs_url=https://namenode.company.bigdata.svc.cluster.local:50470/webhdfs/v1
+        security_enabled=True
+        mechanism=GSSAPI

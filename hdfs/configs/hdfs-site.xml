@@ -1,0 +1,140 @@
+<configuration>
+    <!-- file system properties -->
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>/hadoop/nn</value>
+        <description>Determines where on the local filesystem the DFS name node
+            should store the name table. If this is a comma-delimited list
+            of directories then the name table is replicated in all of the
+            directories, for redundancy. </description>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/hadoop/disk1</value>
+        <description>Determines where on the local filesystem an DFS data node
+            should store its blocks. If this is a comma-delimited
+            list of directories, then data will be stored in all named
+            directories, typically on different devices.
+            Directories that do not exist are ignored.
+        </description>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>dfs.webhdfs.enable</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>dfs.heartbeat.interval</name>
+        <value>3</value>
+        <description>Determines datanode heartbeat interval in seconds.
+        </description>
+    </property>
+
+
+    <property>
+        <name>dfs.http.address</name>
+        <value>0.0.0.0:50070</value>
+        <description>The name of the default file system. Either the
+            literal string "local" or a host:port for NDFS.
+        </description>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>dfs.https.port</name>
+        <value>50470</value>
+        <description>The https port where namenode binds</description>
+
+    </property>
+    <property>
+        <name>dfs.https.address</name>
+        <value>0.0.0.0:50470</value>
+        <description>The https address where namenode binds</description>
+
+    </property>
+    <property>
+        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.permissions</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.permissions.ContentSummary.subAccess</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.block.access.token.enable</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.namenode.kerberos.principal</name>
+        <value>hdfs/_HOST@HOMELDAP.ORG</value>
+    </property>
+    <property>
+        <name>dfs.namenode.keytab.file</name>
+        <value>/etc/security/keytab/namenode.keytab</value>
+    </property>
+    <property>
+        <name>dfs.namenode.kerberos.internal.spnego.principal</name>
+        <value>hdfs/_HOST@HOMELDAP.ORG</value>
+    </property>
+    <property>
+        <name>dfs.namenode.acls.enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir.perm</name>
+        <value>700</value>
+    </property>
+    <property>
+        <name>dfs.datanode.address</name>
+        <value>0.0.0.0:9866</value>
+    </property>
+    <property>
+        <name>dfs.datanode.http.address</name>
+        <value>0.0.0.0:9868</value>
+    </property>
+    <property>
+        <name>dfs.datanode.https.address</name>
+        <value>0.0.0.0:9865</value>
+    </property>
+    <property>
+        <name>dfs.datanode.kerberos.principal</name>
+        <value>hdfs/_HOST@HOMELDAP.ORG</value>
+    </property>
+    <property>
+        <name>dfs.datanode.keytab.file</name>
+        <value>/etc/security/keytab/datanode.keytab</value>
+    </property>
+    <property>
+        <name>dfs.encrypt.data.transfer</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.encrypt.data.transfer.algorithm</name>
+        <value>rc4</value>
+    </property>
+    <property>
+        <name>dfs.data.transfer.protection</name>
+        <value>integrity</value>
+    </property>
+    <property>
+        <name>dfs.http.policy</name>
+        <value>HTTPS_ONLY</value>
+    </property>
+    <property>
+        <name>dfs.namenode.inode.attributes.provider.class</name>
+        <value>org.apache.ranger.authorization.hadoop.RangerHdfsAuthorizer</value>
+    </property>
+
+</configuration>

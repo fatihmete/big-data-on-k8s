@@ -1,0 +1,110 @@
+server:
+  workers: 1
+  coordinatorExtraConfig: |
+    internal-communication.shared-secret=aPM9WVbktUsslZ8amzrPmdCwQjUiMBcqTJMotIK7BrzLzANCYJQm6170qYMj//Oo+NKS7I9UrzdN
+    http-server.authentication.type=KERBEROS
+    http-server.authentication.krb5.service-name=HTTP
+    http-server.authentication.krb5.principal-hostname=kube1
+    http-server.authentication.krb5.keytab=/etc/security/keytabs/trino.keytab
+    http-server.authentication.krb5.user-mapping.pattern = (.*)(@.*)
+    http.authentication.krb5.config=/etc/krb5.conf
+    http-server.https.enabled=true
+    http-server.https.port=7778
+    http-server.https.keystore.path=/etc/security/certs/keystore
+    http-server.https.keystore.key=Bigdata1
+    node.internal-address-source=FQDN
+
+  workerExtraConfig: |
+    internal-communication.shared-secret=aPM9WVbktUsslZ8amzrPmdCwQjUiMBcqTJMotIK7BrzLzANCYJQm6170qYMj//Oo+NKS7I9UrzdN
+image:
+  tag: "474"
+coordinator:
+  configMounts:
+  - name: hadoop-config
+    configMap: hadoop-config
+    path: /hadoop-conf
+  - name: hive-site-config
+    configMap: hive-site-config
+    path: /hive-conf  
+worker:
+  configMounts:
+  - name: hadoop-config
+    configMap: hadoop-config
+    path: /hadoop-conf 
+  - name: hive-site-config
+    configMap: hive-site-config
+    path: /hive-conf  
+
+configMounts:
+ - name: krb5conf
+   configMap: krb5conf
+   path: /etc/krb5.conf
+   subPath: krb5.conf
+   
+secretMounts:
+- name: keytab-trino
+  secretName: keytab-trino
+  path: /etc/security/keytabs/
+- name: trino-keystore
+  secretName: trino-keystore
+  path: /etc/security/certs/  
+
+additionalLogProperties:
+- io.trino.plugin.hive.metastore.thrif=DEBUG
+catalogs:
+  lakehouse: |-
+    connector.name=iceberg
+    hive.metastore.uri=thrift://metastore.company.bigdata.svc.cluster.local:9083
+    fs.hadoop.enabled = true
+    hive.config.resources = /hadoop-conf/core-site.xml, /hadoop-conf/hdfs-site.xml, /hive-conf/hive-site.xml
+    hive.hdfs.impersonation.enabled=false
+    hive.hdfs.authentication.type = KERBEROS
+    hive.hdfs.trino.principal = trino@HOMELDAP.ORG
+    hive.hdfs.trino.keytab = /etc/security/keytabs/trino.keytab
+    hive.metastore.authentication.type=KERBEROS
+    hive.metastore.thrift.impersonation.enabled=true
+    hive.metastore.service.principal=hive/_HOST@HOMELDAP.ORG
+    hive.metastore.client.principal=trino@HOMELDAP.ORG
+    hive.metastore.client.keytab=/etc/security/keytabs/trino.keytab
+    hive.metastore.thrift.client.connect-timeout=1h
+    hive.metastore.thrift.client.read-timeout=1h
+    iceberg.metadata-cache.enabled=false
+auth:
+   groups: "admin:test,fatih"
+accessControl:
+  type: configmap
+  configFile: "rules.json"
+  rules:
+    rules.json: |-
+      {
+        "impersonation": [
+          {
+            "original_user": "trino",
+            "new_user": ".*",
+            "allow": true
+
+          },
+          {
+            "original_user": "hue",
+            "new_user": ".*",
+            "allow": true
+
+          }
+        ],
+        "system_information": [
+        {
+          "user": "test",
+          "allow": ["read", "write"]
+        }
+
+        ],
+        "queries": [
+          {
+            "user": "test",
+            "allow": ["execute", "kill", "view"]
+          },
+          {
+            "allow": ["execute"]
+          }
+       ]
+      }

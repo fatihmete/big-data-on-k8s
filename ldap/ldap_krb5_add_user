@@ -1,0 +1,49 @@
+#!/bin/bash
+
+if [ "$#" -lt 2 ]; then
+  echo "Usage: $0 <username> <password>"
+  exit 1
+fi
+kinit master/admin
+
+# Parametreler
+USERNAME="$1"
+PASSWORD="$2"
+
+# LDAP
+BASE_DN="dc=homeldap,dc=org"
+OU="Service"
+ADMIN_DN="cn=admin,$BASE_DN"
+
+# LDAP add user
+cat <<EOF > temp_user.ldif
+dn: uid=$USERNAME,ou=$OU,$BASE_DN
+objectClass: inetOrgPerson
+objectClass: shadowAccount
+uid: $USERNAME
+sn: ${USERNAME%%/*}
+cn: $USERNAME
+userPassword: $PASSWORD
+EOF
+
+ldapadd -x -D "$ADMIN_DN" -H ldap://homeldap.org -W -f temp_user.ldif
+if [ $? -ne 0 ]; then
+  echo "LDAP kullanıcısı oluşturulurken hata oluştu."
+  rm -f temp_user.ldif
+  exit 1
+fi
+
+echo "LDAP kullanıcısı başarıyla oluşturuldu."
+rm -f temp_user.ldif
+
+# Kerberos principal
+echo "Kerberos principal oluşturuluyor..."
+#kadmin -p master/admin -q "addprinc -pw $PASSWORD $USERNAME"
+kadmin -p master/admin -q "addprinc -x dn=uid=$USERNAME,ou=$OU,$BASE_DN $USERNAME"
+if [ $? -ne 0 ]; then
+  echo "Kerberos principal oluşturulurken hata oluştu."
+  exit 1
+fi
+
+echo "Kerberos principal başarıyla oluşturuldu."
+

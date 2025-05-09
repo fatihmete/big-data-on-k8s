@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: namenode
+  namespace: bigdata
+  labels:
+    app: namenode
+    dns: hdfs-subdomain
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: "kube1"
+  hostname: namenode
+  subdomain: company
+  hostAliases:
+  - ip: "192.168.1.52"
+    hostnames:
+    - "kdc.homeldap.org"
+  containers:
+  - name: namenode
+    image: kube5:30123/custom/hadoop:3.4.1
+    command: ["/bin/bash", "-c"]
+    args:
+    - | 
+      /ranger/ranger-3.0.0-SNAPSHOT-hdfs-plugin/enable-hdfs-plugin.sh
+      if [ ! -d "/hadoop/nn/current" ]; then
+          runuser -u hadoop -- hdfs namenode -format -force
+      fi
+      runuser -u hadoop -- hdfs namenode
+
+    resources:
+      limits:
+        memory: "1G"
+        cpu: "500m"
+    volumeMounts:
+    - name: hadoop-config
+      mountPath: /opt/hadoop/etc/hadoop/core-site.xml
+      subPath: core-site.xml
+    - name: hadoop-config
+      mountPath: /opt/hadoop/etc/hadoop/hdfs-site.xml
+      subPath: hdfs-site.xml
+    - name: hadoop-config
+      mountPath: /opt/hadoop/etc/hadoop/ssl-server.xml
+      subPath: ssl-server.xml
+    - name: namenode-path
+      mountPath: /hadoop/nn
+    - name: krb5conf
+      mountPath: /etc/krb5.conf
+      subPath: krb5.conf
+    - name: keytab-hdfs-namenode
+      mountPath: /etc/security/keytab/namenode.keytab
+      subPath: namenode.keytab
+    - name: keystore-hdfs
+      mountPath: /etc/security/ssl/
+    - name: hdfs-ranger-config
+      mountPath: /ranger/ranger-3.0.0-SNAPSHOT-hdfs-plugin/install.properties
+      subPath: install.properties
+    - name: hdfs-ranger-config
+      mountPath: /ranger/ranger-3.0.0-SNAPSHOT-hdfs-plugin/install/conf.templates/enable/ranger-hdfs-security.xml
+      subPath: ranger-hdfs-security.xml
+  volumes:
+  - name: namenode-path
+    hostPath:
+      path: /hadoop/nn
+      type: Directory
+  - name: hadoop-config
+    configMap:
+      name: hadoop-config
+  - name: krb5conf
+    configMap:
+      name: krb5conf
+  - name: keytab-hdfs-namenode
+    secret:
+      secretName: keytab-hdfs-namenode
+  - name: keystore-hdfs
+    secret:
+      secretName: keystore-hdfs
+  - name: hdfs-ranger-config
+    configMap:
+      name: hdfs-ranger-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: company
+  namespace: bigdata
+spec:
+  selector:
+    dns: hdfs-subdomain
+  clusterIP: None
+  ports:
+  - name: rpc
+    port: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: namenode-np
+  namespace: bigdata
+spec:
+  type: NodePort
+  selector:
+    app: namenode
+  ports:
+  - name: namenode-ui
+    port: 50470
+    targetPort: 50470
+    nodePort: 30570

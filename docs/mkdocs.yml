@@ -1,0 +1,73 @@
+site_name: Bigdata on Kubernetes
+nav:
+  - Home: index.md
+  - Kubernetes: kubernetes.md
+  - HDFS: hdfs.md
+  - Secure HDFS: secure-hdfs.md
+  - Hive: hive.md
+  - Hue: hue.md
+  - Ranger: ranger.md
+  - Ranger Plugins: 
+      - HDFS Plugin: ranger-hdfs-plugin.md
+      - Hive Plugin: ranger-hive-plugin.md
+  - Trino: trino.md
+  - TODO: todo.md
+  - Useful Commands: useful-commands.md
+theme:
+  font:
+    text: Roboto
+    code: Roboto Mono
+  name: material
+  features:
+      - navigation.instant
+      - content.code.copy
+      - content.tabs.link
+      - navigation.instant.progress
+      - navigation.path
+
+  palette:
+    # Palette toggle for automatic mode
+    # - media: "(prefers-color-scheme)"
+    #   toggle:
+    #     icon: material/brightness-auto
+    #     name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+extra_css: 
+  - custom-styles.css
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - pymdownx.blocks.caption
+  - def_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - glightbox
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/linkedin 
+      link: https://www.linkedin.com/in/fatih-mete/

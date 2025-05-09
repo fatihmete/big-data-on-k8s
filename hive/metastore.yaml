@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hive-metastore
+  namespace: bigdata
+  labels:
+    name: hive-metastore
+    app: hive-metastore
+    dns: hdfs-subdomain
+spec:
+  hostname: metastore
+  subdomain: company
+  hostAliases:
+  - ip: "192.168.1.52"
+    hostnames:
+    - "kdc.homeldap.org"
+  containers:
+  - name: hive-metastore
+    image: kube5:30123/custom/hive:4.0.1
+    imagePullPolicy: Always
+    env:
+    - name: SERVICE_OPTS
+      value: "-Xmx1G -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://192.168.1.51:5432/hive -Djavax.jdo.option.ConnectionUserName=root -Djavax.jdo.option.ConnectionPassword=142536"
+    - name: SERVICE_NAME
+      value: metastore
+    - name: DB_DRIVER
+      value: postgres
+    - name: VERBOSE
+      value: 'true'
+    - name: HIVE_CUSTOM_CONF_DIR
+      value: /hive-configs
+    resources:
+      limits:
+        memory: "1G"
+        cpu: "1000m"
+    ports:
+      - containerPort: 9083
+    command: ["/bin/bash", "-c"]
+    args:
+    - |
+      /ranger/ranger-3.0.0-SNAPSHOT-hive-plugin/enable-hive-plugin.sh
+      runuser -u hive -- /entrypoint.sh
+      
+    volumeMounts:
+    - name: hive-site-config
+      mountPath: /hive-configs/hive-site.xml
+      subPath: hive-site.xml
+    - name: hive-site-config
+      mountPath: /hive-configs/yarn-site.xml
+      subPath: yarn-site.xml
+    - name: hadoop-config
+      mountPath: /hive-configs/core-site.xml
+      subPath: core-site.xml
+    - name: hadoop-config
+      mountPath: /hive-configs/hdfs-site.xml
+      subPath: hdfs-site.xml
+    - name: keytab-hive
+      mountPath: /etc/security/keytabs/
+    - name: krb5conf
+      mountPath: /etc/krb5.conf
+      subPath: krb5.conf
+    - name: hive-ranger-config
+      mountPath: /ranger/ranger-3.0.0-SNAPSHOT-hive-plugin/install.properties
+      subPath: install.properties
+  volumes:
+  - name: hive-site-config
+    configMap:
+      name: hive-site-config
+  - name: hadoop-config
+    configMap:
+      name: hadoop-config
+  - name: keytab-hive
+    secret:
+      secretName: keytab-hive
+  - name: krb5conf
+    configMap:
+      name: krb5conf
+  - name: hive-ranger-config
+    configMap:
+      name: hive-ranger-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hive-metastore
+  namespace: bigdata
+spec:
+  type: ClusterIP
+  selector:
+    app: hive-metastore
+  ports:
+  - port: 9083
+    targetPort: 9083

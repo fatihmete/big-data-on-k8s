@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: datanode01
+  namespace: bigdata
+  labels:
+    app: datanode01
+    dns: hdfs-subdomain
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: "kube1"
+  hostname: datanode01
+  subdomain: company
+  hostAliases:
+  - ip: "192.168.1.52"
+    hostnames:
+    - "kdc.homeldap.org"
+  containers:
+  - name: datanode01
+    image: apache/hadoop:3.4.1
+    command: ["/bin/bash", "-c"]
+    args:
+    - |
+      hdfs datanode 
+    resources:
+      limits:
+        memory: "2G"
+        cpu: "500m"
+    volumeMounts:
+    - name: hadoop-config
+      mountPath: /opt/hadoop/etc/hadoop/core-site.xml
+      subPath: core-site.xml
+    - name: hadoop-config
+      mountPath: /opt/hadoop/etc/hadoop/hdfs-site.xml
+      subPath: hdfs-site.xml
+    - name: hadoop-config
+      mountPath: /opt/hadoop/etc/hadoop/ssl-server.xml
+      subPath: ssl-server.xml
+    - name: datanode-path
+      mountPath: /hadoop/disk1
+    - name: krb5conf
+      mountPath: /etc/krb5.conf
+      subPath: krb5.conf
+    - name: keytab-hdfs-datanode-01
+      mountPath: /etc/security/keytab/datanode.keytab
+      subPath: datanode.keytab
+    - name: keystore-hdfs
+      mountPath: /etc/security/ssl/
+  volumes:
+  - name: datanode-path
+    hostPath:
+      path: /hadoop/disk1
+      type: Directory
+  - name: hadoop-config
+    configMap:
+      name: hadoop-config
+  - name: krb5conf
+    configMap:
+      name: krb5conf
+  - name: keytab-hdfs-datanode-01
+    secret:
+      secretName: keytab-hdfs-datanode-01
+  - name: keystore-hdfs
+    secret:
+      secretName: keystore-hdfs

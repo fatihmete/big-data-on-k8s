@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hive-server
+  namespace: bigdata
+  labels:
+    app: hive-server
+    dns: hdfs-subdomain
+spec:
+  hostname: hiveserver
+  subdomain: company
+  hostAliases:
+  - ip: "192.168.1.52"
+    hostnames:
+    - "kdc.homeldap.org"
+  containers:
+  - name: hive-server
+    image: kube5:30123/custom/hive:4.0.1
+    imagePullPolicy: Always
+    env:
+    - name: SERVICE_NAME
+      value: hiveserver2
+    - name: HIVE_CUSTOM_CONF_DIR
+      value: /hive-configs
+    - name: SERVICE_OPTS
+      value: "-Dhive.metastore.uris=thrift://metastore.company.bigdata.svc.cluster.local:9083"
+    resources:
+      limits:
+        memory: "2G"
+        cpu: "1000m"
+    ports:
+      - containerPort: 10000
+      - containerPort: 10002
+    command: ["/bin/bash", "-c"]
+    args:
+    - |
+      /ranger/ranger-3.0.0-SNAPSHOT-hive-plugin/enable-hive-plugin.sh
+      runuser -u hive -- /entrypoint.sh
+    volumeMounts:
+    - name: hive-site-config
+      mountPath: /hive-configs/hive-site.xml
+      subPath: hive-site.xml
+    - name: hive-site-config
+      mountPath: /hive-configs/yarn-site.xml
+      subPath: yarn-site.xml
+    - name: hadoop-config
+      mountPath: /hive-configs/core-site.xml
+      subPath: core-site.xml
+    - name: hadoop-config
+      mountPath: /hive-configs/hdfs-site.xml
+      subPath: hdfs-site.xml
+    - name: keytab-hive-server
+      mountPath: /etc/security/keytabs/
+    - name: krb5conf
+      mountPath: /etc/krb5.conf
+      subPath: krb5.conf
+    - name: hive-ranger-config
+      mountPath: /ranger/ranger-3.0.0-SNAPSHOT-hive-plugin/install.properties
+      subPath: install.properties
+  volumes:
+  - name: hive-site-config
+    configMap:
+      name: hive-site-config
+  - name: hadoop-config
+    configMap:
+      name: hadoop-config
+  - name: keytab-hive-server
+    secret:
+      secretName: keytab-hive-server
+  - name: krb5conf
+    configMap:
+      name: krb5conf
+  - name: hive-ranger-config
+    configMap:
+      name: hive-ranger-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hive-server-svc
+  namespace: bigdata
+spec:
+  type: ClusterIP
+  selector:
+    app: hive-server
+  ports:
+  - port: 10000
+    targetPort: 10000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hive-server-np
+  namespace: bigdata
+spec:
+  type: NodePort
+  selector:
+    app: hive-server
+  ports:
+  - port: 10000
+    name: thrift
+    targetPort: 10000
+    nodePort: 31000
+  - port: 10002
+    name: webui
+    targetPort: 10002
+    nodePort: 31002

@@ -1,0 +1,45 @@
+<configuration>
+    <property>
+        <name>ssl.server.keystore.location</name>
+        <value>/etc/security/ssl/keystore</value>
+        <description>Keystore to be used. Must be specified.
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.server.keystore.password</name>
+        <value>Bigdata1</value>
+    </property>
+
+    <property>
+        <name>ssl.server.keystore.keypassword</name>
+        <value>Bigdata1</value>
+    </property>
+
+    <property>
+        <name>ssl.server.keystore.type</name>
+        <value>JKS</value>
+    </property>
+
+    <property>
+        <name>ssl.server.truststore.type</name>
+        <value>JKS</value>
+    </property>
+
+
+    <property>
+        <name>ssl.server.truststore.location</name>
+        <value>/etc/security/ssl/truststore</value>
+        <description>Truststore to be used by NN and DN. Must be specified.
+        </description>
+    </property>
+
+    <property>
+        <name>ssl.server.truststore.password</name>
+        <value>Bigdata1</value>
+        <description>Optional. Default value is "".
+        </description>
+    </property>
+
+
+</configuration>

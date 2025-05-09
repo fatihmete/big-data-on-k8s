@@ -1,0 +1,80 @@
+diff --git a/hive-agent/src/main/java/org/apache/ranger/authorization/hive/authorizer/RangerHiveAuthorizer.java b/hive-agent/src/main/java/org/apache/ranger/authorization/hive/authorizer/RangerHiveAuthorizer.java
+index 38b8381a5..797c2b3f5 100644
+--- a/hive-agent/src/main/java/org/apache/ranger/authorization/hive/authorizer/RangerHiveAuthorizer.java
++++ b/hive-agent/src/main/java/org/apache/ranger/authorization/hive/authorizer/RangerHiveAuthorizer.java
+@@ -146,7 +146,6 @@ public RangerHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory, H
+                                 appType = "hiveServer2";
+                                 break;
+ 
+-                            /*
+                             case HIVEMETASTORE:
+                                 appType = "hiveMetastore";
+                                 break;
+@@ -155,7 +154,6 @@ public RangerHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory, H
+                                 appType = "other";
+                                 break;
+ 
+-                             */
+                         }
+                     }
+ 
+@@ -171,58 +169,7 @@ public RangerHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory, H
+ 
+     static void setOwnerUser(RangerHiveResource resource, HivePrivilegeObject hiveObj, IMetaStoreClient metaStoreClient, Map<String, String> objOwners) {
+         if (hiveObj != null) {
+-            String objName = null;
+-            String owner   = null;
+-
+-            // resource.setOwnerUser(hiveObj.getOwnerName());
+-            switch (hiveObj.getType()) {
+-                case DATABASE:
+-                    try {
+-                        objName = hiveObj.getDbname();
+-                        owner   = objOwners != null ? objOwners.get(objName) : null;
+-
+-                        if (StringUtils.isBlank(owner)) {
+-                            Database database = metaStoreClient != null ? metaStoreClient.getDatabase(hiveObj.getDbname()) : null;
+-
+-                            if (database != null) {
+-                                owner = database.getOwnerName();
+-                            }
+-                        } else {
+-                            LOG.debug("Owner for database {} is already known", objName);
+-                        }
+-                    } catch (Exception excp) {
+-                        LOG.error("failed to get database object from Hive metastore. dbName={}", hiveObj.getDbname(), excp);
+-                    }
+-                    break;
+-
+-                case TABLE_OR_VIEW:
+-                case COLUMN:
+-                    try {
+-                        objName = hiveObj.getDbname() + "." + hiveObj.getObjectName();
+-                        owner   = objOwners != null ? objOwners.get(objName) : null;
+-
+-                        if (StringUtils.isBlank(owner)) {
+-                            Table table = metaStoreClient != null ? metaStoreClient.getTable(hiveObj.getDbname(), hiveObj.getObjectName()) : null;
+-
+-                            if (table != null) {
+-                                owner = table.getOwner();
+-                            }
+-                        } else {
+-                            LOG.debug("Owner for table {} is already known", objName);
+-                        }
+-                    } catch (Exception excp) {
+-                        LOG.error("failed to get table object from Hive metastore. dbName={}, tblName={}", hiveObj.getDbname(), hiveObj.getObjectName(), excp);
+-                    }
+-                    break;
+-            }
+-
+-            if (objOwners != null && objName != null) {
+-                objOwners.put(objName, owner);
+-            }
+-
+-            if (StringUtils.isNotBlank(objName) && StringUtils.isNotBlank(owner)) {
+-                resource.setOwnerUser(owner);
+-            }
++            resource.setOwnerUser(hiveObj.getOwnerName());
+         }
+ 
+         LOG.debug("setOwnerUser({}): ownerName={}", hiveObj, resource.getOwnerUser());
