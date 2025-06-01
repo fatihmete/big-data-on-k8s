@@ -71,3 +71,6 @@ extra:
   social:
     - icon: fontawesome/brands/linkedin 
       link: https://www.linkedin.com/in/fatih-mete/
+
+repo_url: https://github.com/fatihmete/big-data-on-k8s
+repo_name: fatihmete/big-data-on-k8s
